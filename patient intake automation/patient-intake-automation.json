@@ -1,0 +1,381 @@
+{
+  "name": "Patient Data Entry Automation v1.0",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "patient-intake",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Patient Form Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1.1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate unique patient ID\nconst timestamp = Date.now();\nconst random = Math.floor(Math.random() * 9999).toString().padStart(4, '0');\nconst patientId = `PT${timestamp}${random}`;\n\n// Get and sanitize form data\nconst body = $input.item.json.body || $input.item.json;\n\nconst patient = {\n  patientId,\n  firstName: (body.firstName || '').trim(),\n  lastName: (body.lastName || '').trim(),\n  dateOfBirth: body.dateOfBirth || '',\n  email: (body.email || '').toLowerCase().trim(),\n  phone: (body.phone || '').replace(/\\D/g, ''),\n  address: (body.address || '').trim(),\n  city: (body.city || '').trim(),\n  state: (body.state || '').trim(),\n  zipCode: (body.zipCode || '').trim(),\n  emergencyContact: (body.emergencyContact || '').trim(),\n  emergencyPhone: (body.emergencyPhone || '').replace(/\\D/g, ''),\n  medicalHistory: body.medicalHistory || '',\n  allergies: body.allergies || 'None reported',\n  currentMedications: body.currentMedications || 'None reported',\n  insuranceProvider: body.insuranceProvider || '',\n  insuranceId: (body.insuranceId || '').trim(),\n  submissionDate: new Date().toISOString(),\n  status: 'New - Pending Review'\n};\n\n// Validation\nif (!patient.firstName || !patient.lastName || !patient.email) {\n  throw new Error('Missing required fields: firstName, lastName, and email are required');\n}\n\n// Email format check\nconst emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\nif (!emailRegex.test(patient.email)) {\n  throw new Error('Invalid email format');\n}\n\nreturn { json: patient };"
+      },
+      "id": "process-data",
+      "name": "Generate ID & Validate",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Patient_Records",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "patientId": "={{ $json.patientId }}",
+            "firstName": "={{ $json.firstName }}",
+            "lastName": "={{ $json.lastName }}",
+            "dateOfBirth": "={{ $json.dateOfBirth }}",
+            "email": "={{ $json.email }}",
+            "phone": "={{ $json.phone }}",
+            "address": "={{ $json.address }}",
+            "city": "={{ $json.city }}",
+            "state": "={{ $json.state }}",
+            "zipCode": "={{ $json.zipCode }}",
+            "emergencyContact": "={{ $json.emergencyContact }}",
+            "emergencyPhone": "={{ $json.emergencyPhone }}",
+            "medicalHistory": "={{ $json.medicalHistory }}",
+            "allergies": "={{ $json.allergies }}",
+            "currentMedications": "={{ $json.currentMedications }}",
+            "insuranceProvider": "={{ $json.insuranceProvider }}",
+            "insuranceId": "={{ $json.insuranceId }}",
+            "submissionDate": "={{ $json.submissionDate }}",
+            "status": "={{ $json.status }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-to-sheets",
+      "name": "Log to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [680, 300],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $env.EHR_ENABLED }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "check-ehr",
+      "name": "EHR Enabled?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.EHR_API_URL }}/api/v1/patients",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "external_id",
+              "value": "={{ $json.patientId }}"
+            },
+            {
+              "name": "first_name",
+              "value": "={{ $json.firstName }}"
+            },
+            {
+              "name": "last_name",
+              "value": "={{ $json.lastName }}"
+            },
+            {
+              "name": "date_of_birth",
+              "value": "={{ $json.dateOfBirth }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json.email }}"
+            },
+            {
+              "name": "phone",
+              "value": "={{ $json.phone }}"
+            },
+            {
+              "name": "address",
+              "value": "={{ $json.address }}"
+            },
+            {
+              "name": "insurance_provider",
+              "value": "={{ $json.insuranceProvider }}"
+            },
+            {
+              "name": "insurance_id",
+              "value": "={{ $json.insuranceId }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "push-to-ehr",
+      "name": "Push to EHR",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 180],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "EHR_API_CREDENTIAL_ID",
+          "name": "EHR API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "sendTo": "={{ $json.email }}",
+        "subject": "Registration Confirmed - {{ $json.firstName }} {{ $json.lastName }}",
+        "emailType": "html",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n<style>\nbody { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }\n.container { max-width: 600px; margin: 0 auto; padding: 20px; }\n.header { background: #2c5aa0; color: white; padding: 20px; text-align: center; }\n.content { padding: 20px; background: #f9f9f9; }\n.patient-id { background: #e8f4f8; border-left: 4px solid #2c5aa0; padding: 15px; margin: 20px 0; }\n.footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }\n</style>\n</head>\n<body>\n<div class=\"container\">\n<div class=\"header\">\n<h1>Welcome to Our Practice</h1>\n</div>\n<div class=\"content\">\n<p>Dear {{ $json.firstName }} {{ $json.lastName }},</p>\n<p>Thank you for completing your patient registration. Your information has been successfully received and securely stored.</p>\n<div class=\"patient-id\">\n<strong>Your Patient ID:</strong> {{ $json.patientId }}<br>\n<small>Please reference this ID for all future appointments and communications.</small>\n</div>\n<p><strong>Next Steps:</strong></p>\n<ul>\n<li>You will receive a call within 24-48 hours to schedule your first appointment</li>\n<li>Please bring a valid photo ID and insurance card to your appointment</li>\n<li>Arrive 15 minutes early to complete any additional paperwork</li>\n</ul>\n<p>If you have any questions or need to update your information, please contact us.</p>\n</div>\n<div class=\"footer\">\n<p>This is an automated message. Please do not reply to this email.</p>\n<p>&copy; 2025 Your Practice Name. All rights reserved.</p>\n</div>\n</div>\n</body>\n</html>",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Confirmation Email",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1340, 300],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "GMAIL_CREDENTIAL_ID",
+          "name": "Gmail OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {\n  \"success\": true,\n  \"message\": \"Registration complete. Check your email for confirmation.\",\n  \"patientId\": $json.patientId,\n  \"timestamp\": $json.submissionDate\n} }}",
+        "options": {}
+      },
+      "id": "success-response",
+      "name": "Success Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1560, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log error details\nconst error = $input.item.json.error || {};\nconst errorLog = {\n  timestamp: new Date().toISOString(),\n  errorType: error.name || 'Unknown Error',\n  errorMessage: error.message || 'An error occurred',\n  patientEmail: $input.item.json.email || 'N/A',\n  patientName: `${$input.item.json.firstName || ''} ${$input.item.json.lastName || ''}`.trim() || 'N/A',\n  stackTrace: error.stack || '',\n  rawData: JSON.stringify($input.item.json).substring(0, 1000)\n};\n\nreturn { json: errorLog };"
+      },
+      "id": "format-error",
+      "name": "Format Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 520]
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $env.GOOGLE_SHEET_ID }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Error_Log",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "timestamp": "={{ $json.timestamp }}",
+            "errorType": "={{ $json.errorType }}",
+            "errorMessage": "={{ $json.errorMessage }}",
+            "patientEmail": "={{ $json.patientEmail }}",
+            "patientName": "={{ $json.patientName }}",
+            "stackTrace": "={{ $json.stackTrace }}",
+            "rawData": "={{ $json.rawData }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "log-error",
+      "name": "Log Error to Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [900, 520],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "GOOGLE_SHEETS_CREDENTIAL_ID",
+          "name": "Google Sheets OAuth2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseCode": 400,
+        "responseBody": "={{ {\n  \"success\": false,\n  \"message\": $json.errorMessage || \"Error processing registration\",\n  \"error\": $json.errorType || \"Unknown error\"\n} }}",
+        "options": {}
+      },
+      "id": "error-response",
+      "name": "Error Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1120, 520]
+    }
+  ],
+  "connections": {
+    "Patient Form Webhook": {
+      "main": [
+        [
+          {
+            "node": "Generate ID & Validate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate ID & Validate": {
+      "main": [
+        [
+          {
+            "node": "Log to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log to Google Sheets": {
+      "main": [
+        [
+          {
+            "node": "EHR Enabled?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EHR Enabled?": {
+      "main": [
+        [
+          {
+            "node": "Push to EHR",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Push to EHR": {
+      "main": [
+        [
+          {
+            "node": "Send Confirmation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Confirmation Email": {
+      "main": [
+        [
+          {
+            "node": "Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Error": {
+      "main": [
+        [
+          {
+            "node": "Log Error to Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Error to Sheets": {
+      "main": [
+        [
+          {
+            "node": "Error Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": ""
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2025-11-03T00:00:00.000Z",
+      "updatedAt": "2025-11-03T00:00:00.000Z",
+      "id": "1",
+      "name": "healthcare"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2025-11-03T00:00:00.000Z",
+  "versionId": "1"
+}

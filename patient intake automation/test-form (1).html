@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Registration Form - Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+        
+        h1 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #718096;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-section {
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            color: #2d3748;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            color: #4a5568;
+            font-weight: 500;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        
+        .required {
+            color: #e53e3e;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+            font-family: inherit;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 6px;
+            display: none;
+        }
+        
+        .status-message.success {
+            background: #c6f6d5;
+            border: 2px solid #48bb78;
+            color: #22543d;
+        }
+        
+        .status-message.error {
+            background: #fed7d7;
+            border: 2px solid #f56565;
+            color: #742a2a;
+        }
+        
+        .webhook-config {
+            background: #fef5e7;
+            border: 2px solid #f39c12;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .webhook-config strong {
+            color: #d68910;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Patient Registration</h1>
+        <p class="subtitle">Please complete all required fields marked with <span class="required">*</span></p>
+        
+        <div class="webhook-config">
+            <strong>⚠️ SETUP REQUIRED:</strong> Edit line 272 in this HTML file and replace 
+            <code>YOUR_N8N_WEBHOOK_URL_HERE</code> with your actual n8n webhook URL.
+        </div>
+        
+        <form id="patientForm">
+            <!-- Personal Information -->
+            <div class="form-section">
+                <div class="section-title">Personal Information</div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name <span class="required">*</span></label>
+                        <input type="text" name="firstName" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Last Name <span class="required">*</span></label>
+                        <input type="text" name="lastName" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Date of Birth</label>
+                    <input type="date" name="dateOfBirth">
+                </div>
+                
+                <div class="form-group">
+                    <label>Email <span class="required">*</span></label>
+                    <input type="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" name="phone" placeholder="(555) 123-4567">
+                </div>
+            </div>
+            
+            <!-- Address -->
+            <div class="form-section">
+                <div class="section-title">Address</div>
+                
+                <div class="form-group">
+                    <label>Street Address</label>
+                    <input type="text" name="address" placeholder="123 Main St">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>City</label>
+                        <input type="text" name="city">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>State</label>
+                        <input type="text" name="state" placeholder="CA" maxlength="2">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Zip Code</label>
+                    <input type="text" name="zipCode" placeholder="12345" maxlength="10">
+                </div>
+            </div>
+            
+            <!-- Emergency Contact -->
+            <div class="form-section">
+                <div class="section-title">Emergency Contact</div>
+                
+                <div class="form-group">
+                    <label>Emergency Contact Name</label>
+                    <input type="text" name="emergencyContact" placeholder="Full Name">
+                </div>
+                
+                <div class="form-group">
+                    <label>Emergency Contact Phone</label>
+                    <input type="tel" name="emergencyPhone" placeholder="(555) 123-4567">
+                </div>
+            </div>
+            
+            <!-- Medical Information -->
+            <div class="form-section">
+                <div class="section-title">Medical Information</div>
+                
+                <div class="form-group">
+                    <label>Medical History</label>
+                    <textarea name="medicalHistory" placeholder="Please list any significant medical conditions or past surgeries"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Known Allergies</label>
+                    <textarea name="allergies" placeholder="List all known allergies (medications, food, environmental)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Current Medications</label>
+                    <textarea name="currentMedications" placeholder="List all medications you are currently taking"></textarea>
+                </div>
+            </div>
+            
+            <!-- Insurance -->
+            <div class="form-section">
+                <div class="section-title">Insurance Information</div>
+                
+                <div class="form-group">
+                    <label>Insurance Provider</label>
+                    <input type="text" name="insuranceProvider" placeholder="e.g., Blue Cross, Aetna">
+                </div>
+                
+                <div class="form-group">
+                    <label>Insurance ID Number</label>
+                    <input type="text" name="insuranceId" placeholder="Your insurance ID/member number">
+                </div>
+            </div>
+            
+            <button type="submit" id="submitBtn">Submit Registration</button>
+            
+            <div id="statusMessage" class="status-message"></div>
+        </form>
+    </div>
+    
+    <script>
+        // 🔧 CONFIGURATION: Replace this with your actual n8n webhook URL
+        const WEBHOOK_URL = 'YOUR_N8N_WEBHOOK_URL_HERE';
+        
+        const form = document.getElementById('patientForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // Check if webhook URL is configured
+            if (WEBHOOK_URL === 'YOUR_N8N_WEBHOOK_URL_HERE') {
+                showMessage('error', '⚠️ Please configure the webhook URL in this HTML file first!');
+                return;
+            }
+            
+            // Disable submit button
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+            
+            // Collect form data
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            
+            try {
+                const response = await fetch(WEBHOOK_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('success', 
+                        `✅ Registration complete!<br>` +
+                        `<strong>Patient ID:</strong> ${result.patientId}<br>` +
+                        `Please check your email for confirmation.`
+                    );
+                    form.reset();
+                } else {
+                    showMessage('error', 
+                        `❌ Error: ${result.message || 'Registration failed'}`
+                    );
+                }
+            } catch (error) {
+                showMessage('error', 
+                    `❌ Connection error: ${error.message}<br>` +
+                    `Please check your webhook URL and try again.`
+                );
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Registration';
+            }
+        });
+        
+        function showMessage(type, message) {
+            statusMessage.className = `status-message ${type}`;
+            statusMessage.innerHTML = message;
+            statusMessage.style.display = 'block';
+            
+            // Auto-hide after 10 seconds
+            setTimeout(() => {
+                statusMessage.style.display = 'none';
+            }, 10000);
+        }
+    </script>
+</body>
+</html>

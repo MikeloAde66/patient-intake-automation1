@@ -1,0 +1,151 @@
+HIPAA COMPLIANCE CHECKLIST
+Patient Data Entry Automation v1.0
+
+Complete this checklist before going live with patient data.
+
+═══════════════════════════════════════════════════════
+
+BEFORE YOU START
+□ Designate a Privacy Officer for your practice
+□ Designate a Security Officer
+□ Review HIPAA regulations at: hhs.gov/hipaa
+
+TECHNICAL SAFEGUARDS
+
+Access Control:
+□ Enable 2-factor authentication on n8n account
+□ Enable 2-factor authentication on Google account  
+□ Enable 2-factor authentication on Gmail account
+□ Use unique user IDs (no shared logins)
+□ Limit Google Sheet access to authorized personnel only
+□ Set Google Sheet to "Restricted" (not public/anyone with link)
+
+Encryption:
+□ Verify webhook uses HTTPS (not HTTP)
+□ Confirm Gmail uses TLS encryption
+□ If using EHR API, verify it uses HTTPS
+
+Audit Controls:
+□ Enable n8n execution logging
+□ Review Google Sheets version history regularly
+□ Check Error_Log sheet weekly
+□ Keep logs for minimum 6 years
+
+Data Integrity:
+□ Test data validation (workflow rejects invalid emails)
+□ Test error handling (errors logged properly)
+□ Set up automated backups of Google Sheets
+
+ADMINISTRATIVE SAFEGUARDS
+
+Policies & Procedures:
+□ Create written HIPAA policies
+□ Document data breach response plan
+□ Create data retention policy
+□ Create data disposal policy
+
+Workforce Training:
+□ Train all staff on HIPAA requirements
+□ Train staff on using the new system
+□ Document training completion dates
+□ Schedule annual refresher training
+
+Business Associate Agreements (BAAs):
+□ Sign BAA with n8n (if using cloud version)
+□ Sign BAA with Google Workspace
+□ Sign BAA with EHR vendor (if applicable)
+□ Keep copies of all BAAs on file
+
+Risk Management:
+□ Conduct initial risk assessment
+□ Document all identified risks
+□ Implement mitigation strategies
+□ Schedule annual risk assessments
+
+PHYSICAL SAFEGUARDS
+
+Workstation Security:
+□ Enable screen lock after 10 minutes inactivity
+□ Position screens away from public view
+□ Implement clean desk policy
+□ Restrict physical access to workstations
+
+ONGOING COMPLIANCE
+
+Daily:
+□ None required (automation runs 24/7)
+
+Weekly:
+□ Review error logs for issues
+□ Check n8n execution history
+
+Monthly:
+□ Audit Google Sheets access logs
+□ Review new patient records for completeness
+□ Backup Google Sheets data
+
+Annually:
+□ Conduct full HIPAA risk assessment
+□ Review and update policies
+□ Renew staff training
+□ Review BAAs for renewals
+
+BREACH RESPONSE PLAN
+
+If you suspect a data breach:
+
+1. IMMEDIATELY:
+   - Disable compromised accounts
+   - Document: date/time discovered, what happened
+   
+2. WITHIN 24 HOURS:
+   - Assess scope: How many patients affected?
+   - Determine: Was ePHI actually accessed/acquired?
+   - Contain: Stop the breach from continuing
+   
+3. WITHIN 60 DAYS:
+   - Notify affected patients (if breach confirmed)
+   - Notify HHS (if 500+ patients affected, notify immediately)
+   - Notify media (if 500+ patients affected)
+   
+4. DOCUMENT EVERYTHING:
+   - Keep written record of all actions taken
+   - Document risk assessment results
+   - Save all communication
+
+IMPORTANT NOTES:
+
+• ePHI = Electronic Protected Health Information
+• This includes: names, addresses, emails, DOB, medical history, insurance info
+• Accidental disclosure to 1 person = breach (must assess risk)
+• Theft of laptop with patient data = breach (must notify)
+• Google Sheet shared publicly = breach (must notify)
+
+PENALTIES FOR NON-COMPLIANCE:
+
+• $100 - $50,000 per violation
+• Maximum $1.5 million per year
+• Possible criminal charges
+
+RESOURCES:
+
+HHS HIPAA Portal: hhs.gov/hipaa
+Breach Notification: hhs.gov/hipaa/for-professionals/breach-notification
+OCR Guidance: hhs.gov/ocr
+
+SIGN-OFF:
+
+Practice Name: _______________________________
+Privacy Officer: ______________________________
+Security Officer: _____________________________
+Date Completed: _______________________________
+
+Signature: ____________________________________
+
+═══════════════════════════════════════════════════════
+
+Keep this checklist on file for audit purposes.
+Review annually or when regulations change.
+
+ProtoLabs Healthcare Automations
+support@protoautomations.com
